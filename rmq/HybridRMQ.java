@@ -5,21 +5,19 @@ import java.util.ArrayList;
 /**
  * An &lt;O(n), O(log n)&gt; implementation of the RMQ as a hybrid between
  * the sparse table (on top) and no-precomputation structure (on bottom)
- *
- * You will implement this class for problem 3.iii of Problem Set One.
  */
 public class HybridRMQ implements RMQ {
 	private int[] top;
 	private int[] bottom;
 	private float[] elements;
 	private int[] logs;
-	private ArrayList<Integer> powers;
+	private ArrayList<Integer> powers;  // Compute once for time efficiency
 	private int[][] sparseTable;
-	private int n;
+	private int n;  // size of array
 	
 	/**
 	 * Helper function for getting which index has the minimum value in 
-	 * the array
+	 * the array.
 	 * @param index1 the first index in question
 	 * @param index2 the second
 	 * @return the index that represents the min
@@ -28,6 +26,9 @@ public class HybridRMQ implements RMQ {
 		return elements[index1] <= elements[index2] ? index1 : index2;
 	}
 	
+	/**
+	 * Initializes top array of blocks with mins of each block.
+	 */
 	private void InitializeTop() {
 		int b = (int)(Math.log(n) / Math.log(2));
 		int blocks = (int) Math.ceil((double)(n)/b);
@@ -42,6 +43,9 @@ public class HybridRMQ implements RMQ {
 		}
 	}
 	
+	/**
+	 * Initializes bottom array to be indexes in order. 
+	 */
 	private void InitializeBottom() {
 		bottom = new int[n];
     	for (int i=0; i < n; i++) {
@@ -49,6 +53,9 @@ public class HybridRMQ implements RMQ {
     	}
 	}
 	
+	/**
+	 * Initializes both arrays.
+	 */
 	private void InitializeTopAndBottom() {
 		InitializeTop();
 		InitializeBottom();
@@ -89,6 +96,9 @@ public class HybridRMQ implements RMQ {
 		}
 	}
 	
+	/**
+	 * Builds sparse table of top layer dynamically in linear time.
+	 */
 	private void BuildSparseTable() {
 		// Construct sparse table for top layer
 		int m = top.length;
@@ -128,7 +138,13 @@ public class HybridRMQ implements RMQ {
 		BuildSparseTable();
     }
 
-    
+    /**
+     * Finds the minimum of the bottom layer for query between two indices. 
+     * @param i start index
+     * @param j end index
+     * @param b block size
+     * @return the minimum.
+     */
     private int BottomMin(int i, int j, int b) {
     	// Find min of bottom layer indices
     	int bottomMin = i;
@@ -143,12 +159,19 @@ public class HybridRMQ implements RMQ {
     	return bottomMin;
     }
     
+    /**
+     * Finds the minimum of the top layer between block indices.
+     * @param topi index of start block
+     * @param topj index of bottom block
+     * @return the minimum
+     */
     private int TopMin(int topi, int topj) {
     	int k = logs[topj-topi];
 		int twotok = powers.get(k);
 		int topMin = MinIndex(sparseTable[topi][k], sparseTable[topj-twotok+1][k]);
 		return topMin;
     }
+    
     /**
      * Evaluates RMQ(i, j) over the array stored by the constructor, returning
      * the index of the minimum value in that range.

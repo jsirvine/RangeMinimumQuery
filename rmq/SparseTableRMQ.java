@@ -3,8 +3,6 @@ import java.util.*;
 /**
  * An &lt;O(n log n), O(1)&gt; implementation of RMQ that uses a sparse table
  * to do lookups efficiently.
- *
- * You will implement this class for problem 3.ii of Problem Set One.
  */
 public class SparseTableRMQ implements RMQ {
 	private int[][] sparseTable;
@@ -14,7 +12,7 @@ public class SparseTableRMQ implements RMQ {
 
 	/**
 	 * Constructs an array that at each index i holds the largest value k such
-	 * that 2^k is less than or equal to i + 1
+	 * that 2^k is less than or equal to i + 1.
 	 * 
 	 * @n the number of indices i to calculate this up to 
 	 */

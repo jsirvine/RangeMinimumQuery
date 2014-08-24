@@ -5,25 +5,35 @@ import java.util.Stack;
 
 /**
  * An &lt;O(n), O(1)&gt; implementation of the Fischer-Heun RMQ data structure.
- *
- * You will implement this class for problem 3.iv of Problem Set One.
  */
 public class FischerHeunRMQ implements RMQ {
 	private int[] top;
 	private int[] bottom;
 	private float[] elements;
-	private int[] logs;
-	private ArrayList<Integer> powers;
+	private int[] logs;  // compute once for time efficiency
+	private ArrayList<Integer> powers;  // compute once for time efficiency
 	private int[][] sparseTable;
-	private int n;
-	private int b;
+	private int n;  // size of array
+	private int b;  // size of blocks
 	private int blocks;
 	private RMQStructure[] cartesianRMQs;
 	private int[] cartesians;
 
+	/**
+	 * Structure holding precomputed rmqs. Arrays structed the same way (with the same
+	 * cartesian number) have the same structure, thus can save on time and space by 
+	 * storing RMQ structures.
+	 * @author jirvine
+	 *
+	 */
 	private class RMQStructure {
 		private int[][] rmqs;
 
+		/**
+		 * Constructor. Builds a precomputed RMQ structure from array between i and j.
+		 * @param i start index
+		 * @param j end index
+		 */
 		public RMQStructure(int i, int j) {
 			int numElems = j - i + 1;
 			rmqs = new int[numElems][numElems];
@@ -44,11 +54,22 @@ public class FischerHeunRMQ implements RMQ {
 			}
 		}
 		
+		/**
+		 * Query between indices
+		 * @param k start index
+		 * @param l end index
+		 * @return the minimum index
+		 */
 		public int RMQ(int k, int l) {
 			return rmqs[k][l];
 		}
 	};
 	
+	/**
+	 * Helper functions for cartesian number calculation.
+	 * @param x
+	 * @return
+	 */
 	private int add0right(int x) {
 		return 2*x;
 	}
@@ -57,11 +78,19 @@ public class FischerHeunRMQ implements RMQ {
 		return 2*x + 1;
 	}
 	
+	/**
+	 * Finds cartesian number for array between indices.
+	 * @param i start index
+	 * @param j end index
+	 * @return cartesian number
+	 */
 	private int CartesianNumber(int i, int j) {
 		int cartesian = 0;
 		Stack<Integer> stack = new Stack<Integer>();
 		stack.push(i);
 		cartesian = add1right(cartesian);
+		// Calculate the cartesian number using stack algorithm. Each is pushed
+		// on stack once and popped off once, thus linear time.
 		for (int k = i+1; k <= j; k++) {
 			while (!stack.isEmpty() && elements[k] < elements[stack.peek()]) {
 				stack.pop();
@@ -77,6 +106,9 @@ public class FischerHeunRMQ implements RMQ {
 		return cartesian;
 	}
 	
+	/**
+	 * Initialize cartesian numbers for each block and all possible rmq structures.
+	 */
 	private void InitializeCartesians() {
 		cartesians = new int[blocks];
 		cartesianRMQs = new RMQStructure[powers.get(2*b)];
@@ -102,6 +134,9 @@ public class FischerHeunRMQ implements RMQ {
 		return elements[index1] <= elements[index2] ? index1 : index2;
 	}
 
+	/**
+	 * Initializes top blocks to hold mins of each block. Linear time.
+	 */
 	private void InitializeTop() {
 		top = new int[blocks];
 		for (int block = 0; block < blocks; block++) {
@@ -161,6 +196,9 @@ public class FischerHeunRMQ implements RMQ {
 		}
 	}
 
+	/**
+	 * Builds a sparse table dynamically in linear time.
+	 */
 	private void BuildSparseTable() {
 		// Construct sparse table for top layer
 		int m = top.length;
@@ -206,6 +244,12 @@ public class FischerHeunRMQ implements RMQ {
 	}
 
 
+	/**
+	 * Finds min of within two blocks on bottom layer.
+	 * @param i the index of the first block
+	 * @param j the index of the second block
+	 * @return the minimum index
+	 */
 	private int BottomMin(int i, int j) {
 		int iBlock = (int)(i/b);
 		int jBlock = (int)(j/b);
@@ -228,6 +272,12 @@ public class FischerHeunRMQ implements RMQ {
 		return MinIndex(firstMin, secondMin);
 	}
 
+	/**
+	 * Finds minimum of top array of blocks.
+	 * @param topi index of start block
+	 * @param topj index of end block
+	 * @return the minimum index
+	 */
 	private int TopMin(int topi, int topj) {
 		int k = logs[topj-topi];
 		int twotok = powers.get(k);
@@ -235,6 +285,12 @@ public class FischerHeunRMQ implements RMQ {
 		return topMin;
 	}
 	
+	/**
+	 * Simple linear-time rmq query. 
+	 * @param i start index
+	 * @param j end index
+	 * @return minimum index
+	 */
 	private int linearPass(int i, int j) {
 		int minIndex = i;
 		for (int k = i+1; k <= j; k++) {
